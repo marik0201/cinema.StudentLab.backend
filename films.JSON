@@ -1,0 +1,44 @@
+{
+    "films": [
+      {
+        "name": "Капитан Марвел",
+        "time": "21-03-2019",
+        "city": "Минск",
+        "Cinema": "Октябрь",
+        "EmptySeats":50,
+        "url": "https://st.kp.yandex.net/images/film_iphone/iphone360_843859.jpg"
+      },
+      {
+        "name": "Капитан Марвел",
+        "time": "21-03-2019",
+        "city": "Минск",
+        "Cinema": "Москва",
+        "EmptySeats":50,
+        "url": "https://st.kp.yandex.net/images/film_iphone/iphone360_843859.jpg"
+      },
+      {
+        "name": "Капитан Марвел",
+        "time": "21-03-2019",
+        "city": "Минск",
+        "Cinema": "Октябрь",
+        "EmptySeats":50,
+        "url": "https://st.kp.yandex.net/images/film_iphone/iphone360_843859.jpg"
+      },
+      {
+        "name": "Капитан Марвел",
+        "time": "21-03-2019",
+        "city": "Минск",
+        "Cinema": "Октябрь",
+        "EmptySeats":50,
+        "url": "https://st.kp.yandex.net/images/film_iphone/iphone360_843859.jpg"
+      },
+      {
+        "name": "Капитан Марвел",
+        "time": "21-03-2019",
+        "city": "Минск",
+        "Cinema": "Октябрь",
+        "EmptySeats":50,
+        "url": "https://st.kp.yandex.net/images/film_iphone/iphone360_843859.jpg"
+      }
+    ]
+  }
