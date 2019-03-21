@@ -1,5 +1,5 @@
 {
-    "films": [
+    "sessions": [
       {
         "name": "Капитан Марвел",
         "time": "21-03-2019",
@@ -46,6 +46,20 @@
         "city": "Брест",
         "Cinema": "Ракета",
         "EmptySeats":50,
+        "url": "https://img.afisha.tut.by/static/media/340x0s/cover/09/8/zelenaya-kniga-6781953.jpg"
+      }
+    ],
+    "films": [
+      {
+        "name": "Капитан Марвел",
+        "url": "https://st.kp.yandex.net/images/film_iphone/iphone360_843859.jpg"
+      },
+      {
+        "name": "Чужой",
+        "url": "https://img.afisha.tut.by/static/media/340x0s/cover/03/2/chuzhoy-ru-sub-305982.jpg"
+      },
+      {
+        "name": "Зеленая Книга",
         "url": "https://img.afisha.tut.by/static/media/340x0s/cover/09/8/zelenaya-kniga-6781953.jpg"
       }
     ]
