@@ -24,33 +24,7 @@ app.get("/api/films", (req, res) => {
             result: JSON.parse(data)
         })
     })        
-})
-
-app.post("/create", (req, res) => {
-    console.log("body", req.body);
-    
-    fs.writeFile('message.json', JSON.stringify(req.body),  err => {
-        if (err) throw err;
-        console.log('Saved!');
-    });
-    
-    res.json({
-        data: "ok"
-    })
-})
-
-app.post("/delete", (req, res) => {
-    console.log("body", req.body);
-    
-    fs.writeFile('message.json', JSON.stringify(req.body),  err => {
-        if (err) throw err;
-        console.log('Saved!');
-    });
-    
-    res.json({
-        data: "ok"
-    })
-         
+        
 })
 
 app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`))
