@@ -14,8 +14,8 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get("/", (req, res) => {
-    fs.readFile(path.join(__dirname, "message.json"), "utf-8", (err, data) => {
+app.get("/api/films", (req, res) => {
+    fs.readFile(path.join(__dirname, "films.json"), "utf-8", (err, data) => {
         if (err) res.json({
             result: []
         })
