@@ -1,30 +1,32 @@
-const express = require("express");
-const bodyParser = require("body-parser")
-const cors = require("cors")
-const fs = require("fs");
-const path = require("path")
-
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const Film = require('./models/Film');
 
 const app = express();
-
 const PORT = 3000;
 
 app.use(cors());
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get("/api/films", (req, res) => {
-    fs.readFile(path.join(__dirname, "films.json"), "utf-8", (err, data) => {
-        if (err) res.json({
-            result: []
-        })
+mongoose.connect('mongodb://localhost/Cinema', function(err) {
+  if (err) {
+    throw err;
+  }
+});
 
-        res.json({
-            result: JSON.parse(data)
-        })
-    })        
-        
-})
+app.get('/api/films', (req, res) => {
+  Film.find({}, function(err, docs) {
+    if (err) {
+      return res.status(500).json({ message: 'Запрос не выполнен' });
+    }
 
-app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`))
+    res.json({
+      result: docs
+    });
+  });
+});
+
+app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`));
