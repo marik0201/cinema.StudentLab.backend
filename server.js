@@ -31,15 +31,16 @@ app.get('/api/films', (req, res) => {
 });
 
 app.get('/api/sessions/:film', (req, res) => {
-
-  Film.find({ name: req.params.film }, function(err, docs) {
+  Film.find({ slugName: req.params.film }, function(err, docs) {
     if (err) return res.status(500).json({ message: 'Запрос не выполнен' });
+    const filmName = docs[0].name;
 
     const id = docs[0]._id;
 
     Session.find({ filmId: id }, function(err, docs) {
       res.json({
-        result: docs
+        result: docs,
+        filmName
       });
     });
   });

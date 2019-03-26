@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const sessionSchema = new Schema({
   time: String,
   cinema: String,
+  emptySeats: String,
   filmId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true
