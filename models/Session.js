@@ -3,10 +3,11 @@ const Schema = mongoose.Schema;
 const sessionSchema = new Schema({
   time: String,
   cinema: String,
-  emptySeats: String,
+  emptySeats: Number,
   filmId: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
+    required: true,
+    ref: 'Film'
   }
 });
 
