@@ -35,16 +35,15 @@ app.get('/api/sessions/:film', (req, res) => {
     .populate('sessions')
     .exec(function(err, data) {
       if (err) {
-        return res.status(404).json({ message: 'Запрос не выполнен' });
+        return res.status(500).json({ message: 'Запрос не выполнен' });
       }
 
       if (data.length === 0) {
         res.status(404).json({ message: 'Такого фильма не существует' });
       } else {
-        const filmName = data[0].name;
         res.json({
           result: data[0].sessions,
-          filmName
+          filmName: data[0].name
         });
       }
     });
