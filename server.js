@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const Film = require('./models/Film');
-
+const Session = require('./models/Session');
 const app = express();
 const PORT = 3000;
 
@@ -27,6 +27,25 @@ app.get('/api/films', (req, res) => {
       result: docs
     });
   });
+});
+
+app.get('/api/sessions/:film', (req, res) => {
+  Film.find({ slugName: req.params.film })
+    .populate('sessions')
+    .exec(function(err, data) {
+      if (err) {
+        return res.status(500).json({ message: 'Запрос не выполнен' });
+      }
+
+      if (data.length === 0) {
+        res.status(404).json({ message: 'Такого фильма не существует' });
+      } else {
+        res.json({
+          result: data[0].sessions,
+          filmName: data[0].name
+        });
+      }
+    });
 });
 
 app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`));
