@@ -56,7 +56,7 @@ app.post('/api/login',  async (req, res) => {
             token         
         })
       } else {
-        res.json({
+        res.status(404).json({
           message: "Не удалось найти пользователя"
         })
       }
