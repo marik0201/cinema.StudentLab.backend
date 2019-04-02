@@ -42,24 +42,26 @@ mongoose.connect('mongodb://localhost/Cinema', function(err) {
   }
 });
 
-app.post('/api/login',  async (req, res) => {
+app.post('/api/login', async (req, res) => {
   let login = req.body.login;
   let password = req.body.password;
 
-   User.findOne({ login }).then(user => {
+  User.findOne({ login }).then(user => {
     if (user && user.password === password) {
-        const payload = { id: user.id };
-        let token = jwt.sign(payload, jwtOptions.secretOrKey, { expiresIn: '12h' });
-        res.json({
-            userName: user.name,
-            userLogin: user.login,
-            token         
-        })
-      } else {
-        res.status(404).json({
-          message: "Не удалось найти пользователя"
-        })
-      }
+      const payload = { id: user.id };
+      let token = jwt.sign(payload, jwtOptions.secretOrKey, {
+        expiresIn: '12h'
+      });
+      res.json({
+        userName: user.name,
+        userLogin: user.login,
+        token
+      });
+    } else {
+      res.status(404).json({
+        message: 'Не удалось найти пользователя'
+      });
+    }
   });
 
   //   var user = users.filter( user => user.name == name)[0];
