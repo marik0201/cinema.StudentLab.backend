@@ -54,29 +54,27 @@ app.post('/api/ticket', (req, res) => {
   let numberOfSeats = req.body.ticket.numberOfSeats;
   let sessionId = req.body.ticket.sessionId;
 
-  if (!req.body.ticket || !name || !numberOfSeats || !sessionId) {
-    res.status(404).json({ message: 'Не все данные введены' });
-  } else if (
-    typeof name !== 'string' ||
-    typeof numberOfSeats !== 'number' ||
-    typeof sessionId !== 'string'
-  ) {
-    res.status(404).json({ message: 'Некорректные данные' });
-  } else {
-    Session.findOne({ _id: req.body.ticket.sessionId }, (err, data) => {
-      if (err) {
-        return res.status(500).json({ message: 'Запрос не выполнен' });
-      }
+  Session.findOne({ _id: req.body.ticket.sessionId }, (err, data) => {
+    if (err) {
+      return res.status(500).json({ message: 'Запрос не выполнен' });
+    }
 
-      if (data.emptySeats < numberOfSeats) {
-        res.status(404).json({ message: 'Места закончились' });
-      } else {
-        const ticket = new Ticket({
-          name: req.body.ticket.name,
-          numberOfSeats: req.body.ticket.numberOfSeats,
-          sessionId: req.body.ticket.sessionId
+    if (data.emptySeats < numberOfSeats) {
+      res.status(400).json({ message: 'Места закончились' });
+    } else {
+      const ticket = new Ticket({
+        name,
+        numberOfSeats,
+        sessionId
+      });
+
+      let error = ticket.validateSync();
+      if (error) {
+        let errorName = Object.keys(error.errors)[0];
+        res.status(400).json({
+          message: error.errors[errorName].message
         });
-
+      } else {
         ticket.save(err => {
           if (err) {
             return res.status(500).json({ message: 'Запрос не выполнен' });
@@ -96,7 +94,7 @@ app.post('/api/ticket', (req, res) => {
           );
         });
       }
-    });
-  }
+    }
+  });
 });
 app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`));
