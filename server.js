@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const Film = require('./models/Film');
 const Session = require('./models/Session');
 const Ticket = require('./models/Ticket');
+const ObjectId = require('mongoose').Types.ObjectId;
 const app = express();
 const PORT = 3000;
 
@@ -14,7 +15,9 @@ app.use(bodyParser.json());
 
 mongoose.connect('mongodb://localhost/Cinema', function(err) {
   if (err) {
-    throw err;
+    res.status(500).json({
+      message: 'Нет подключения к Базе данных'
+    });
   }
 });
 
@@ -54,27 +57,36 @@ app.post('/api/ticket', (req, res) => {
   let numberOfSeats = req.body.ticket.numberOfSeats;
   let sessionId = req.body.ticket.sessionId;
 
-  Session.findOne({ _id: req.body.ticket.sessionId }, (err, data) => {
-    if (err) {
-      return res.status(500).json({ message: 'Запрос не выполнен' });
-    }
+  !ObjectId.isValid(sessionId)
+    ? res.status(400).json({ message: 'Невалидный ObjectId' })
+    : Session.findOne({ _id: req.body.ticket.sessionId }, (err, data) => {
+        if (err) {
+          return res.status(500).json({ message: 'Ошибка сервера' });
+        }
+        if (!data) {
+          return res.status(400).json({ message: 'Сеанс не найден' });
+        }
 
-    if (data.emptySeats < numberOfSeats) {
-      res.status(400).json({ message: 'Места закончились' });
-    } else {
-      const ticket = new Ticket({
-        name,
-        numberOfSeats,
-        sessionId
-      });
-
-      let error = ticket.validateSync();
-      if (error) {
-        let errorName = Object.keys(error.errors)[0];
-        res.status(400).json({
-          message: error.errors[errorName].message
+        if (data.emptySeats < numberOfSeats) {
+          return res.status(400).json({ message: 'Места закончились' });
+        }
+        const ticket = new Ticket({
+          name,
+          numberOfSeats,
+          sessionId
         });
-      } else {
+
+        let error = ticket.validateSync();
+
+        if (error) {
+          let errorMessages = [];
+          for (const key in error.errors) {
+            errorMessages.push(error.errors[key].message);
+          }
+          return res.status(400).json({
+            errorMessages
+          });
+        }
         ticket.save(err => {
           if (err) {
             return res.status(500).json({ message: 'Запрос не выполнен' });
@@ -87,14 +99,12 @@ app.post('/api/ticket', (req, res) => {
               if (err) {
                 return res.status(500).json({ message: 'Запрос не выполнен' });
               }
-              res.json({
+              return res.json({
                 message: 'Билет сохранен'
               });
             }
           );
         });
-      }
-    }
-  });
+      });
 });
 app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`));

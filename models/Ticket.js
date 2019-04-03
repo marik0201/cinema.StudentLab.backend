@@ -3,24 +3,23 @@ const Schema = mongoose.Schema;
 const ticketSchema = new Schema({
   name: {
     type: String,
-    required: [true, 'Заполните поля'],
+    required: [true, 'Введите имя'],
     validate: {
       validator: function(v) {
-        return /(^[а-яА-Я]{1,15}$)/.test(v);
+        return v.match(/(^[а-яА-Я]{1,15}$)/);
       },
       message: props => `${props.value} - невалидное имя`
     }
   },
-  numberOfSeats: { type: Number, required: [true, 'Заполните поля'],
-  validate: {
-    validator: function(v) {
-      return /(^[1-5]{1}$)/.test(v);
-    },
-    message: props => `${props.value} - невалидный номер`
-  } },
+  numberOfSeats: {
+    type: Number,
+    required: [true, 'Введите количество мест'],
+    min: [1, 'Неверное количество мест'],
+    max: [5, 'Неверное количество мест']
+  },
   sessionId: {
     type: mongoose.Schema.Types.ObjectId,
-    required: [true, 'Заполните поля'],
+    required: [true, 'Введите id сеанса'],
     ref: 'Session'
   }
 });
