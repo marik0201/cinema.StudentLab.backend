@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const ticketSchema = new Schema({
   name: {
     type: String,
-    required: [true, 'Введите имя'],
+    required: [true, 'Поле name не заполнено'],
     validate: {
       validator: function(v) {
         return v.match(/(^[а-яА-Я]{1,15}$)/);
@@ -13,13 +13,13 @@ const ticketSchema = new Schema({
   },
   numberOfSeats: {
     type: Number,
-    required: [true, 'Введите количество мест'],
+    required: [true, 'Поле numberOfSeats не заполнено'],
     min: [1, 'Неверное количество мест'],
     max: [5, 'Неверное количество мест']
   },
   sessionId: {
     type: mongoose.Schema.Types.ObjectId,
-    required: [true, 'Введите id сеанса'],
+    required: [true, 'Поле sessionId не заполнено '],
     ref: 'Session'
   }
 });

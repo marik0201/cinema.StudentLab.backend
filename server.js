@@ -15,16 +15,14 @@ app.use(bodyParser.json());
 
 mongoose.connect('mongodb://localhost/Cinema', function(err) {
   if (err) {
-    res.status(500).json({
-      message: 'Нет подключения к Базе данных'
-    });
+   return res.status(500);
   }
 });
 
 app.get('/api/films', (req, res) => {
-  Film.find({}, function(err, docs) {
+  Film.find({}, (err, docs) => {
     if (err) {
-      return res.status(500).json({ message: 'Запрос не выполнен' });
+      return res.status(500);
     }
 
     res.json({
@@ -36,9 +34,9 @@ app.get('/api/films', (req, res) => {
 app.get('/api/sessions/:film', (req, res) => {
   Film.find({ slugName: req.params.film })
     .populate('sessions')
-    .exec(function(err, data) {
+    .exec( (err, data) =>{
       if (err) {
-        return res.status(500).json({ message: 'Запрос не выполнен' });
+        return res.status(500);
       }
 
       if (data.length === 0) {
@@ -53,15 +51,13 @@ app.get('/api/sessions/:film', (req, res) => {
 });
 
 app.post('/api/ticket', (req, res) => {
-  let name = req.body.ticket.name;
-  let numberOfSeats = req.body.ticket.numberOfSeats;
-  let sessionId = req.body.ticket.sessionId;
+  const { name, numberOfSeats, sessionId } = req.body.ticket;
 
   !ObjectId.isValid(sessionId)
     ? res.status(400).json({ message: 'Невалидный ObjectId' })
-    : Session.findOne({ _id: req.body.ticket.sessionId }, (err, data) => {
+    : Session.findOne({ _id: sessionId }, (err, data) => {
         if (err) {
-          return res.status(500).json({ message: 'Ошибка сервера' });
+          return res.status(500);
         }
         if (!data) {
           return res.status(400).json({ message: 'Сеанс не найден' });
@@ -76,10 +72,10 @@ app.post('/api/ticket', (req, res) => {
           sessionId
         });
 
-        let error = ticket.validateSync();
+        const error = ticket.validateSync();
 
         if (error) {
-          let errorMessages = [];
+          const errorMessages = [];
           for (const key in error.errors) {
             errorMessages.push(error.errors[key].message);
           }
@@ -89,15 +85,15 @@ app.post('/api/ticket', (req, res) => {
         }
         ticket.save(err => {
           if (err) {
-            return res.status(500).json({ message: 'Запрос не выполнен' });
+            return res.status(500);
           }
 
           Session.updateOne(
-            { _id: req.body.ticket.sessionId },
-            { $inc: { emptySeats: -req.body.ticket.numberOfSeats } },
+            { _id: sessionId },
+            { $inc: { emptySeats: -numberOfSeats } },
             (err, data) => {
               if (err) {
-                return res.status(500).json({ message: 'Запрос не выполнен' });
+                return res.status(500);
               }
               return res.json({
                 message: 'Билет сохранен'
