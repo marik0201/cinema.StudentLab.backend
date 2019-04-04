@@ -42,7 +42,7 @@ mongoose.connect('mongodb://localhost/Cinema', function(err) {
   }
 });
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/login',  (req, res) => {
   let login = req.body.login;
   let password = req.body.password;
 
@@ -52,17 +52,20 @@ app.post('/api/login', async (req, res) => {
       let token = jwt.sign(payload, jwtOptions.secretOrKey, {
         expiresIn: '12h'
       });
-      res.json({
+      return res.json({
         userName: user.name,
         userLogin: user.login,
         token
       });
-    } else {
-      res.status(404).json({
-        message: 'Не удалось найти пользователя'
-      });
     }
+    return res.status(404).json({
+      message: 'Не удалось найти пользователя'
+    });
   });
+
+  app.post('/api/signin', (req,res) => {
+    
+  })
 
   //   var user = users.filter( user => user.name == name)[0];
   //   if( ! user ){
