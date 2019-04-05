@@ -6,27 +6,22 @@ const Film = require('./models/Film');
 const Session = require('./models/Session');
 const Ticket = require('./models/Ticket');
 const User = require('./models/User');
+const ObjectId = require('mongoose').Types.ObjectId;
+const passportJWT = require('passport-jwt');
+const jwt = require('jsonwebtoken');
+const passport = require('passport');
 const app = express();
-let passportJWT = require('passport-jwt');
-var jwt = require('jsonwebtoken');
-var passport = require('passport');
 const PORT = 3000;
 
-let ExtractJwt = passportJWT.ExtractJwt;
-let JwtStrategy = passportJWT.Strategy;
+const ExtractJwt = passportJWT.ExtractJwt;
+const JwtStrategy = passportJWT.Strategy;
 
-app.use(cors());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(passport.initialize());
-
-let jwtOptions = {};
+const jwtOptions = {};
 jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme('JWT');
 jwtOptions.secretOrKey = 'secretKey';
 
-let strategy = new JwtStrategy(jwtOptions, (jwt_payload, next) => {
+const strategy = new JwtStrategy(jwtOptions, (jwt_payload, next) => {
   let user = User.findById(jwt_payload.id);
-  // var user = users.filter( user => user.id == jwt_payload.id)[0];
   if (user) {
     next(null, user);
   } else {
@@ -34,63 +29,88 @@ let strategy = new JwtStrategy(jwtOptions, (jwt_payload, next) => {
   }
 });
 
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(passport.initialize());
 passport.use(strategy);
 
-mongoose.connect('mongodb://localhost/Cinema', function(err) {
+mongoose.connect('mongodb://localhost/Cinema', err => {
   if (err) {
-    throw err;
+    return res.status(500).json({ message: 'Ошибка сервера' });
   }
 });
 
-app.post('/api/login',  (req, res) => {
-  let login = req.body.login;
-  let password = req.body.password;
+app.post('/api/login', (req, res) => {
+  const { login, password } = req.body;
 
   User.findOne({ login }).then(user => {
     if (user && user.password === password) {
       const payload = { id: user.id };
-      let token = jwt.sign(payload, jwtOptions.secretOrKey, {
+      const token = jwt.sign(payload, jwtOptions.secretOrKey, {
         expiresIn: '12h'
       });
       return res.json({
         userName: user.name,
         userLogin: user.login,
+        isAdmin: user.isAdmin,
         token
       });
     }
-    return res.status(404).json({
+    return res.status(400).json({
       message: 'Не удалось найти пользователя'
     });
   });
+});
 
-  app.post('/api/signin', (req,res) => {
-    
-  })
+app.post('/api/signup', (req, res) => {
+  const { name, login, password } = req.body;
 
-  //   var user = users.filter( user => user.name == name)[0];
-  //   if( ! user ){
-  //     next(new Error("Нет такого юзера"));
-  //   }
-  //   console.log(user);
+  const newUser = new User({
+    name,
+    login,
+    password
+  });
 
-  //   if(user.password === req.body.password) {
-  //     // from now on we'll identify the user by the id and the id is the only personalized value that goes into our token
-  //     var payload = {id: user.id};
-  //     console.log('nice');
+  const error = newUser.validateSync();
 
-  //     var token = jwt.sign(payload, jwtOptions.secretOrKey);
-  //     console.log(name);
+  if (error) {
+    const errorMessages = [];
+    for (const key in error.errors) {
+      errorMessages.push(error.errors[key].message);
+    }
+    return res.status(400).json({
+      errorMessages
+    });
+  }
 
-  //     res.json({message: "ok", token: token, user:name});
-  //   } else {
-  //     next(new Error("Неверный пароль"));
-  // }
+  User.find({ login }, (err, data) => {
+    if (err) {
+      return res.status(500).json({ message: 'Ошибка сервера' });
+    }
+    if (data.length !== 0) {
+      return res
+        .status(400)
+        .json({
+          message: 'Такой пользователь уже существует. Попробуйте другой login'
+        });
+    }
+
+    newUser.save(err => {
+      if (err) {
+        return res.status(500).json({ message: 'Ошибка сервера' });
+      }
+      res.json({
+        message: 'User сохранен'
+      });
+    });
+  });
 });
 
 app.get('/api/films', (req, res) => {
-  Film.find({}, function(err, docs) {
+  Film.find({}, (err, docs) => {
     if (err) {
-      return res.status(500).json({ message: 'Запрос не выполнен' });
+      return res.status(500).json({ message: 'Ошибка сервера' });
     }
 
     res.json({
@@ -102,46 +122,72 @@ app.get('/api/films', (req, res) => {
 app.get('/api/sessions/:film', (req, res) => {
   Film.find({ slugName: req.params.film })
     .populate('sessions')
-    .exec(function(err, data) {
+    .exec((err, data) => {
       if (err) {
-        return res.status(500).json({ message: 'Запрос не выполнен' });
+        return res.status(500).json({ message: 'Ошибка сервера' });
       }
 
       if (data.length === 0) {
-        res.status(404).json({ message: 'Такого фильма не существует' });
-      } else {
-        res.json({
-          result: data[0].sessions,
-          filmName: data[0].name
-        });
+        return res.status(404).json({ message: 'Такого фильма не существует' });
       }
+      res.json({
+        result: data[0].sessions,
+        filmName: data[0].name
+      });
     });
 });
 
 app.post('/api/ticket', (req, res) => {
-  const ticket = new Ticket({
-    name: req.body.ticket.name,
-    numberOfSeats: req.body.ticket.numberOfSeats,
-    sessionId: req.body.ticket.sessionId
-  });
+  const { name, numberOfSeats, sessionId } = req.body.ticket;
 
-  ticket.save(err => {
-    if (err) {
-      return res.status(500).json({ message: 'Запрос не выполнен' });
-    }
-
-    Session.updateOne(
-      { _id: req.body.ticket.sessionId },
-      { $inc: { emptySeats: -req.body.ticket.numberOfSeats } },
-      (err, data) => {
+  !ObjectId.isValid(sessionId)
+    ? res.status(400).json({ message: 'Невалидный ObjectId' })
+    : Session.findOne({ _id: sessionId }, (err, data) => {
         if (err) {
-          return res.status(500).json({ message: 'Запрос не выполнен' });
+          return res.status(500).json({ message: 'Ошибка сервера' });
         }
-        res.json({
-          message: 'Билет сохранен'
+        if (!data) {
+          return res.status(400).json({ message: 'Сеанс не найден' });
+        }
+
+        if (data.emptySeats < numberOfSeats) {
+          return res.status(400).json({ message: 'Места закончились' });
+        }
+        const ticket = new Ticket({
+          name,
+          numberOfSeats,
+          sessionId
         });
-      }
-    );
-  });
+
+        const error = ticket.validateSync();
+
+        if (error) {
+          const errorMessages = [];
+          for (const key in error.errors) {
+            errorMessages.push(error.errors[key].message);
+          }
+          return res.status(400).json({
+            errorMessages
+          });
+        }
+        ticket.save(err => {
+          if (err) {
+            return res.status(500).json({ message: 'Ошибка сервера' });
+          }
+
+          Session.updateOne(
+            { _id: sessionId },
+            { $inc: { emptySeats: -numberOfSeats } },
+            (err, data) => {
+              if (err) {
+                return res.status(500).json({ message: 'Ошибка сервера' });
+              }
+              return res.json({
+                message: 'Билет сохранен'
+              });
+            }
+          );
+        });
+      });
 });
 app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`));
