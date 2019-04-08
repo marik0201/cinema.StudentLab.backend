@@ -8,6 +8,7 @@ const Ticket = require('./models/Ticket');
 const User = require('./models/User');
 const ObjectId = require('mongoose').Types.ObjectId;
 const passportJWT = require('passport-jwt');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const app = express();
@@ -44,15 +45,27 @@ mongoose.connect('mongodb://localhost/Cinema', err => {
 app.post('/api/login', (req, res) => {
   const { login, password } = req.body;
 
+  if (!login && !password) {
+    return res.status(400).json({
+      message: 'Поля не заполнены'
+    });
+  }
+
   User.findOne({ login }).then(user => {
-    if (user && user.password === password) {
+    if (user) {
+      const isMatch = bcrypt.compareSync(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({
+          message: 'Не удалось найти пользователя'
+        });
+      }
+
       const payload = { id: user.id };
       const token = jwt.sign(payload, jwtOptions.secretOrKey, {
-        expiresIn: '12h'
+        expiresIn: '30m'
       });
       return res.json({
         userName: user.name,
-        userLogin: user.login,
         isAdmin: user.isAdmin,
         token
       });
@@ -84,16 +97,14 @@ app.post('/api/signup', (req, res) => {
     });
   }
 
-  User.find({ login }, (err, data) => {
+  User.findOne({ login }, (err, data) => {
     if (err) {
       return res.status(500).json({ message: 'Ошибка сервера' });
     }
     if (data.length !== 0) {
-      return res
-        .status(400)
-        .json({
-          message: 'Такой пользователь уже существует. Попробуйте другой login'
-        });
+      return res.status(400).json({
+        message: 'Такой пользователь уже существует. Попробуйте другой login'
+      });
     }
 
     newUser.save(err => {
@@ -101,7 +112,7 @@ app.post('/api/signup', (req, res) => {
         return res.status(500).json({ message: 'Ошибка сервера' });
       }
       res.json({
-        message: 'User сохранен'
+        message: 'Пользователь сохранен'
       });
     });
   });
@@ -126,7 +137,6 @@ app.get('/api/sessions/:film', (req, res) => {
       if (err) {
         return res.status(500).json({ message: 'Ошибка сервера' });
       }
-
       if (data.length === 0) {
         return res.status(404).json({ message: 'Такого фильма не существует' });
       }
