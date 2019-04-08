@@ -159,7 +159,6 @@ app.post('/api/ticket', (req, res) => {
         if (!data) {
           return res.status(400).json({ message: 'Сеанс не найден' });
         }
-
         if (data.emptySeats < numberOfSeats) {
           return res.status(400).json({ message: 'Места закончились' });
         }
