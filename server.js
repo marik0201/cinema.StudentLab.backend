@@ -5,12 +5,14 @@ const mongoose = require('mongoose');
 const Film = require('./models/Film');
 const Session = require('./models/Session');
 const Ticket = require('./models/Ticket');
+
 const User = require('./models/User');
 const ObjectId = require('mongoose').Types.ObjectId;
 const passportJWT = require('passport-jwt');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
+
 const app = express();
 const PORT = 3000;
 
@@ -38,7 +40,9 @@ passport.use(strategy);
 
 mongoose.connect('mongodb://localhost/Cinema', err => {
   if (err) {
+
     return res.status(500).json({ message: 'Ошибка сервера' });
+
   }
 });
 
@@ -121,7 +125,9 @@ app.post('/api/signup', (req, res) => {
 app.get('/api/films', (req, res) => {
   Film.find({}, (err, docs) => {
     if (err) {
+
       return res.status(500).json({ message: 'Ошибка сервера' });
+
     }
 
     res.json({
@@ -133,9 +139,11 @@ app.get('/api/films', (req, res) => {
 app.get('/api/sessions/:film', (req, res) => {
   Film.find({ slugName: req.params.film })
     .populate('sessions')
+
     .exec((err, data) => {
       if (err) {
         return res.status(500).json({ message: 'Ошибка сервера' });
+
       }
       if (data.length === 0) {
         return res.status(404).json({ message: 'Такого фильма не существует' });
@@ -154,6 +162,7 @@ app.post('/api/ticket', (req, res) => {
     ? res.status(400).json({ message: 'Невалидный ObjectId' })
     : Session.findOne({ _id: sessionId }, (err, data) => {
         if (err) {
+
           return res.status(500).json({ message: 'Ошибка сервера' });
         }
         if (!data) {
@@ -162,6 +171,7 @@ app.post('/api/ticket', (req, res) => {
         if (data.emptySeats < numberOfSeats) {
           return res.status(400).json({ message: 'Места закончились' });
         }
+
         const ticket = new Ticket({
           name,
           numberOfSeats,
@@ -181,7 +191,9 @@ app.post('/api/ticket', (req, res) => {
         }
         ticket.save(err => {
           if (err) {
+
             return res.status(500).json({ message: 'Ошибка сервера' });
+
           }
 
           Session.updateOne(
@@ -189,6 +201,7 @@ app.post('/api/ticket', (req, res) => {
             { $inc: { emptySeats: -numberOfSeats } },
             (err, data) => {
               if (err) {
+
                 return res.status(500).json({ message: 'Ошибка сервера' });
               }
               return res.json({
