@@ -69,7 +69,7 @@ app.post('/api/login', (req, res) => {
 
       const payload = { id: user.id };
       const token = jwt.sign(payload, jwtOptions.secretOrKey, {
-        expiresIn: '30s'
+        expiresIn: '30m'
       });
       return res.json({
         userName: user.name,
