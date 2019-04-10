@@ -16,7 +16,7 @@ const PORT = 3000;
 
 const ExtractJwt = passportJWT.ExtractJwt;
 const JwtStrategy = passportJWT.Strategy;
-
+const authenticate = passport.authenticate('jwt', {session: false});
 const jwtOptions = {};
 jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme('JWT');
 jwtOptions.secretOrKey = 'secretKey';
@@ -42,6 +42,13 @@ mongoose.connect('mongodb://localhost/Cinema', err => {
   }
 });
 
+
+app.get('/api/auth', authenticate, (req,res) => {
+    res.json({
+      message: 'Authenticate'
+    })
+})
+
 app.post('/api/login', (req, res) => {
   const { login, password } = req.body;
 
@@ -62,7 +69,7 @@ app.post('/api/login', (req, res) => {
 
       const payload = { id: user.id };
       const token = jwt.sign(payload, jwtOptions.secretOrKey, {
-        expiresIn: '30m'
+        expiresIn: '30s'
       });
       return res.json({
         userName: user.name,
@@ -75,6 +82,8 @@ app.post('/api/login', (req, res) => {
     });
   });
 });
+
+
 
 app.post('/api/signup', (req, res) => {
   const { name, login, password } = req.body;
