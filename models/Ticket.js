@@ -4,12 +4,7 @@ const ticketSchema = new Schema({
   name: {
     type: String,
     required: [true, 'Поле name не заполнено'],
-    validate: {
-      validator: function(v) {
-        return v.match(/(^[а-яА-Я]{1,15}$)/);
-      },
-      message: props => `${props.value} - невалидное имя`
-    }
+    match: [/(^[а-яА-Яa-zA-Z]{1,15}$)/, 'Введите валидное имя']
   },
   numberOfSeats: {
     type: Number,
