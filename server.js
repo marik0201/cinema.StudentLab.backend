@@ -13,10 +13,9 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const app = express();
 const PORT = 3000;
-
 const ExtractJwt = passportJWT.ExtractJwt;
 const JwtStrategy = passportJWT.Strategy;
-const authenticate = passport.authenticate('jwt', {session: false});
+const authenticate = passport.authenticate('jwt', { session: false });
 const jwtOptions = {};
 jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme('JWT');
 jwtOptions.secretOrKey = 'secretKey';
@@ -42,13 +41,6 @@ mongoose.connect('mongodb://localhost/Cinema', err => {
   }
 });
 
-
-app.get('/api/auth', authenticate, (req,res) => {
-    res.json({
-      message: 'Authenticate'
-    })
-})
-
 app.post('/api/login', (req, res) => {
   const { login, password } = req.body;
 
@@ -58,7 +50,10 @@ app.post('/api/login', (req, res) => {
     });
   }
 
-  User.findOne({ login }).then(user => {
+  User.findOne({ login }, (err, user) => {
+    if (err) {
+      return res.status(500).json({ message: 'Ошибка сервера' });
+    }
     if (user) {
       const isMatch = bcrypt.compareSync(password, user.password);
       if (!isMatch) {
@@ -82,8 +77,6 @@ app.post('/api/login', (req, res) => {
     });
   });
 });
-
-
 
 app.post('/api/signup', (req, res) => {
   const { name, login, password } = req.body;
@@ -110,7 +103,7 @@ app.post('/api/signup', (req, res) => {
     if (err) {
       return res.status(500).json({ message: 'Ошибка сервера' });
     }
-    if (data.length !== 0) {
+    if (data) {
       return res.status(400).json({
         message: 'Такой пользователь уже существует. Попробуйте другой login'
       });
@@ -156,9 +149,12 @@ app.get('/api/sessions/:film', (req, res) => {
     });
 });
 
-app.post('/api/ticket', (req, res) => {
-  const { name, numberOfSeats, sessionId } = req.body.ticket;
-
+app.post('/api/ticket', authenticate, (req, res) => {
+  console.log(req.body);
+  
+  const {numberOfSeats, sessionId } = req.body.ticket;
+  const userId = req.user._conditions._id;
+  
   !ObjectId.isValid(sessionId)
     ? res.status(400).json({ message: 'Невалидный ObjectId' })
     : Session.findOne({ _id: sessionId }, (err, data) => {
@@ -172,11 +168,11 @@ app.post('/api/ticket', (req, res) => {
           return res.status(400).json({ message: 'Места закончились' });
         }
         const ticket = new Ticket({
-          name,
           numberOfSeats,
+          userId,
           sessionId
         });
-
+        
         const error = ticket.validateSync();
 
         if (error) {
