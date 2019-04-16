@@ -149,9 +149,10 @@ app.get('/api/sessions/:film', (req, res) => {
     });
 });
 
-app.post('/api/ticket', (req, res) => {
-  const { name, numberOfSeats, sessionId } = req.body.ticket;
-
+app.post('/api/ticket', authenticate, (req, res) => {  
+  const {numberOfSeats, sessionId } = req.body.ticket;
+  const userId = req.user._conditions._id;
+  
   !ObjectId.isValid(sessionId)
     ? res.status(400).json({ message: 'Невалидный ObjectId' })
     : Session.findOne({ _id: sessionId }, (err, data) => {
@@ -165,11 +166,11 @@ app.post('/api/ticket', (req, res) => {
           return res.status(400).json({ message: 'Места закончились' });
         }
         const ticket = new Ticket({
-          name,
           numberOfSeats,
+          userId,
           sessionId
         });
-
+        
         const error = ticket.validateSync();
 
         if (error) {
