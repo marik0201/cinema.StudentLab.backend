@@ -149,9 +149,7 @@ app.get('/api/sessions/:film', (req, res) => {
     });
 });
 
-app.post('/api/ticket', authenticate, (req, res) => {
-  console.log(req.body);
-  
+app.post('/api/ticket', authenticate, (req, res) => {  
   const {numberOfSeats, sessionId } = req.body.ticket;
   const userId = req.user._conditions._id;
   
