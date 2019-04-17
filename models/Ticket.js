@@ -16,7 +16,8 @@ const ticketSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: [true, 'Поле sessionId не заполнено '],
     ref: 'Session'
-  }
+  },
+  status: { type: String, default: 'Active' }
 });
 
 module.exports = mongoose.model('Ticket', ticketSchema);

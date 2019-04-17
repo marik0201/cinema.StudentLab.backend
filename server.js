@@ -150,11 +150,9 @@ app.get('/api/sessions/:film', (req, res) => {
 });
 
 app.post('/api/ticket', authenticate, (req, res) => {
-  console.log(req.body);
-  
-  const {numberOfSeats, sessionId } = req.body.ticket;
+  const { numberOfSeats, sessionId } = req.body.ticket;
   const userId = req.user._conditions._id;
-  
+
   !ObjectId.isValid(sessionId)
     ? res.status(400).json({ message: 'Невалидный ObjectId' })
     : Session.findOne({ _id: sessionId }, (err, data) => {
@@ -172,7 +170,7 @@ app.post('/api/ticket', authenticate, (req, res) => {
           userId,
           sessionId
         });
-        
+
         const error = ticket.validateSync();
 
         if (error) {
@@ -204,4 +202,95 @@ app.post('/api/ticket', authenticate, (req, res) => {
         });
       });
 });
+
+app.get('/api/tickets', authenticate, (req, res) => {
+  Ticket.find({ userId: req.user._conditions._id }, (err, data) => {
+    if (err) {
+      return res.status(500).json({ message: 'Ошибка сервера' });
+    }
+
+    return res.json({
+      tickets: data
+    });
+  });
+});
+
+app.post('/api/tickets/:id/cancel', authenticate, async (req, res) => {
+  try {
+    const updateTicket = await Ticket.findByIdAndUpdate(
+      req.params.id,
+      { status: 'Canceled' },
+      { new: true }
+    );
+    if (!updateTicket) {
+      return res.status(400).json({ message: 'Такого билета не существует' });
+    }
+
+    const updateSession = await Session.updateOne(
+      { _id: updateTicket.sessionId },
+      { $inc: { emptySeats: updateTicket.numberOfSeats } }
+    );
+
+    if (updateSession) {
+      return res.json({
+        message: 'Билет отменён'
+      });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: 'Ошибка сервера' });
+  }
+});
+
+app.post('/api/auth/password', authenticate, (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  User.findById(req.user._conditions._id, (err, data) => {
+    if (err) {
+      return res.status(500).json({ message: 'Ошибка сервера' });
+    }
+    bcrypt
+      .compare(oldPassword, data.password)
+      .then(data => {
+        if (!data) {
+          return res.status(400).json({ message: 'Неверный пароль' });
+        }
+
+        User.findByIdAndUpdate(
+          req.user._conditions._id,
+          { password: bcrypt.hashSync(newPassword, bcrypt.genSaltSync(10)) },
+          (err, data) => {
+            if (err) {
+              return res.status(500).json({ message: 'Ошибка сервера' });
+            }
+            return res.json({
+              message: 'Пароль изменён'
+            });
+          }
+        );
+      })
+      .catch(err => {
+        return res.status(500).json({ message: 'Ошибка сервера' });
+      });
+  });
+});
+
+app.put('/api/user', authenticate, (req, res) => {
+  const { newName } = req.body;
+  User.findByIdAndUpdate(
+    req.user._conditions._id,
+    { name: newName },
+    (err, data) => {
+      if (err) {
+        return res.status(500).json({ message: 'Ошибка сервера' });
+      }
+      if (!data) {
+        return res.status(400).json({ message: 'Неверные данные' });
+      }
+
+      return res.json({
+        message: 'Имя изменено'
+      });
+    }
+  );
+});
+
 app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`));
