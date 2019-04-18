@@ -4,7 +4,7 @@ const films = require('./films');
 const sessions = require('./sessions');
 const tickets = require('./tickets');
 const user = require('./user');
-const passport = require('../Controllers/passport');
+const passport = require('../Service/UserAuthenticate');
 const router = express.Router();
 
 router.use('/api/auth', auth);

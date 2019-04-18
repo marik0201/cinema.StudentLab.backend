@@ -2,7 +2,7 @@ const express = require('express');
 const authRouter = express.Router();
 const bcrypt = require('bcrypt');
 const User = require('../../models/User');
-const passport = require('../../Controllers/passport');
+const passport = require('../../Service/UserAuthenticate');
 const jwt = require('jsonwebtoken');
 
 authRouter.post('/login', (req, res) => {
