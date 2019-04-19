@@ -59,15 +59,21 @@ ticketsRouter.post('/', (req, res) => {
 });
 
 ticketsRouter.get('/', (req, res) => {
-  Ticket.find({ userId: req.user._conditions._id }, (err, data) => {
-    if (err) {
-      return res.status(500).json({ message: 'Ошибка сервера' });
-    }
+  Ticket.find({ userId: req.user._conditions._id })
+    .populate({
+      path: 'sessionId',
+      select: 'time',
+      populate: { path: 'filmId', select: 'name' }
+    })
+    .exec((err, data) => {
+      if (err) {
+        return res.status(500).json({ message: 'Ошибка сервера' });
+      }
 
-    return res.json({
-      tickets: data
+      return res.json({
+        tickets: data
+      });
     });
-  });
 });
 
 ticketsRouter.post('/:id/cancel', async (req, res) => {

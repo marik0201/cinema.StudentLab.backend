@@ -4,6 +4,7 @@ const User = require('../../models/User');
 
 userRouter.put('/', (req, res) => {
   const { newName } = req.body;
+
   User.findByIdAndUpdate(
     req.user._conditions._id,
     { name: newName },
