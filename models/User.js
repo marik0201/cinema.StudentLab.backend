@@ -40,4 +40,8 @@ userSchema.pre('save', function(next) {
   });
 });
 
+userSchema.methods.generateHash = function(password) {
+  return bcrypt.hashSync(password, bcrypt.genSaltSync(10), null);
+};
+
 module.exports = mongoose.model('User', userSchema);
