@@ -8,8 +8,7 @@ const sessionSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: 'Film'
-  },
-  tickets: [{ type: Schema.Types.ObjectId, ref: 'Ticket' }]
+  }
 });
 
 module.exports = mongoose.model('Session', sessionSchema);

@@ -8,7 +8,7 @@ jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme('JWT');
 jwtOptions.secretOrKey = 'secretKey';
 
 const strategy = new JwtStrategy(jwtOptions, (jwt_payload, next) => {
-  let user = User.findById(jwt_payload.id);
+  let user = User.findOne({_id: jwt_payload.id}).select('isAdmin -_id');
   if (user) {
     next(null, user);
   } else {
