@@ -29,6 +29,49 @@ adminRouter.get('/users', (req, res) => {
   });
 });
 
+adminRouter.delete('/users/:id', (req, res) => {
+  User.findByIdAndDelete(req.params.id, (err, data) => {
+    if (!data) {
+      return res.status(400).json({
+        message: 'Пользователя не существует'
+      });
+    }
+
+    if (err) {
+      return res.status(500).json({ message: 'Ошибка сервера' });
+    }
+
+    res.json({
+      message: 'Пользователь удалён'
+    });
+  });
+});
+
+adminRouter.post('/users/changerole/:id', (req, res) => {
+  User.findById(req.params.id, (err, data) => {
+    if (!data) {
+      return res.status(400).json({
+        message: 'Пользователя не существует'
+      });
+    }
+
+    if (err) {
+      return res.status(500).json({ message: 'Ошибка сервера' });
+    }
+    data.isAdmin = !data.isAdmin;
+
+    data.save((err, data) => {
+      if (err) {
+        return res.status(500).json({ message: 'Ошибка сервера' });
+      }
+
+      res.json({
+        message: 'Статус сменён'
+      });
+    });
+  });
+});
+
 adminRouter.post('/films', (req, res) => {
   const { name, slugName, url } = req.body;
 
