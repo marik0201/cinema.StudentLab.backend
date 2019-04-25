@@ -1,5 +1,6 @@
 const express = require('express');
 const adminRouter = express.Router();
+const slug = require('transliteration').slugify;
 const User = require('../../models/User');
 const Film = require('../../models/Film');
 const Session = require('../../models/Session');
@@ -73,33 +74,40 @@ adminRouter.post('/users/changerole/:id', (req, res) => {
 });
 
 adminRouter.post('/films', (req, res) => {
-  const { name, slugName, url } = req.body;
+  const { name, url } = req.body;
+  const slugName = slug(name);
 
-  const newFilm = new Film({
-    name,
-    slugName,
-    url
-  });
-  const error = newFilm.validateSync();
+  if (name && url) {
+    const newFilm = new Film({
+      name,
+      slugName,
+      url
+    });
+    const error = newFilm.validateSync();
 
-  if (error) {
-    const errorMessages = [];
-    for (const key in error.errors) {
-      errorMessages.push(error.errors[key].message);
+    if (error) {
+      const errorMessages = [];
+      for (const key in error.errors) {
+        errorMessages.push(error.errors[key].message);
+      }
+      return res.status(400).json({
+        errorMessages
+      });
     }
+
+    newFilm.save(err => {
+      if (err) {
+        return res.status(500).json({ message: 'Ошибка сервера' });
+      }
+      res.json({
+        message: 'Фильм сохранен'
+      });
+    });
+  } else {
     return res.status(400).json({
-      errorMessages
+      message: 'Поле name и/или url не указано'
     });
   }
-
-  newFilm.save(err => {
-    if (err) {
-      return res.status(500).json({ message: 'Ошибка сервера' });
-    }
-    res.json({
-      message: 'Фильм сохранен'
-    });
-  });
 });
 
 adminRouter.get('/films', (req, res) => {
@@ -109,6 +117,24 @@ adminRouter.get('/films', (req, res) => {
     }
     return res.json({
       films: data
+    });
+  });
+});
+
+adminRouter.delete('/films/:id', (req, res) => {
+  Film.findByIdAndDelete(req.params.id, (err, data) => {
+    if (!data) {
+      return res.status(400).json({
+        message: 'Фильма не существует'
+      });
+    }
+
+    if (err) {
+      return res.status(500).json({ message: 'Ошибка сервера' });
+    }
+
+    res.json({
+      message: 'Фильм удалён'
     });
   });
 });

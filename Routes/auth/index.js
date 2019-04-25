@@ -27,7 +27,7 @@ authRouter.post('/login', (req, res) => {
       }
       const payload = { id: user.id };
       const token = jwt.sign(payload, passport.jwtOptions.secretOrKey, {
-        expiresIn: '30m'
+        expiresIn: '180m'
       });
       return res.json({
         userName: user.name,
