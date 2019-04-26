@@ -3,6 +3,7 @@ const adminRouter = express.Router();
 const slug = require('transliteration').slugify;
 const User = require('../../models/User');
 const Film = require('../../models/Film');
+const Ticket = require('../../models/Ticket');
 const Session = require('../../models/Session');
 const passport = require('../../Service/UserAuthenticate');
 
@@ -189,6 +190,36 @@ adminRouter.post('/sessions', (req, res) => {
         });
       }
     );
+  });
+});
+
+adminRouter.delete('/sessions/:id', (req, res) => {
+  Session.findByIdAndDelete(req.params.id, (err, data) => {
+    if (!data) {
+      return res.status(400).json({
+        message: 'Сеанса не существует'
+      });
+    }
+
+    if (err) {
+      return res.status(500).json({ message: 'Ошибка сервера' });
+    }
+
+    Ticket.remove({ sessionId: req.params.id }, (err, data) => {
+      if (!data) {
+        return res.status(400).json({
+          message: 'Сеанса не существует'
+        });
+      }
+
+      if (err) {
+        return res.status(500).json({ message: 'Ошибка сервера' });
+      }
+
+      res.json({
+        message: 'Сеанс удалён'
+      });
+    });
   });
 });
 
