@@ -10,7 +10,7 @@ const sessionSchema = new Schema({
     required: [true, 'Поле cinema не заполнено']
   },
   emptySeats: {
-    type: String,
+    type: Number,
     required: [true, 'Поле emptySeats не заполнено']
   },
   filmId: {

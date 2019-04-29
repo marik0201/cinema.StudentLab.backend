@@ -5,18 +5,17 @@ const User = require('../../models/User');
 const Film = require('../../models/Film');
 const Ticket = require('../../models/Ticket');
 const Session = require('../../models/Session');
-const passport = require('../../Service/UserAuthenticate');
 
 adminRouter.use((req, res, next) => {
-  req.user.exec(function(err, data) {
+  req.user.exec(function (err, data) {
     if (err) {
       return res.status(500).json({ message: 'Ошибка сервера' });
     }
     data.isAdmin
       ? next()
       : res.status(403).json({
-          message: 'Нет доступа'
-        });
+        message: 'Нет доступа'
+      });
   });
 });
 
@@ -34,25 +33,29 @@ adminRouter.get('/users', (req, res) => {
 adminRouter.delete('/users/:id', (req, res) => {
   User.findByIdAndDelete(req.params.id, (err, data) => {
     if (!data) {
-      return res.status(400).json({
+      return res.status(404).json({
         message: 'Пользователя не существует'
       });
     }
-
     if (err) {
       return res.status(500).json({ message: 'Ошибка сервера' });
     }
 
-    res.json({
-      message: 'Пользователь удалён'
-    });
+    Ticket.remove({ userId: req.params.id }, (err, data) => {
+      if (err) {
+        return res.status(500).json({ message: 'Ошибка сервера' });
+      }
+      res.json({
+        message: 'Пользователь удалён'
+      });
+    })
   });
 });
 
 adminRouter.post('/users/changerole/:id', (req, res) => {
   User.findById(req.params.id, (err, data) => {
     if (!data) {
-      return res.status(400).json({
+      return res.status(404).json({
         message: 'Пользователя не существует'
       });
     }
@@ -125,7 +128,7 @@ adminRouter.get('/films', (req, res) => {
 adminRouter.delete('/films/:id', (req, res) => {
   Film.findByIdAndDelete(req.params.id, (err, data) => {
     if (!data) {
-      return res.status(400).json({
+      return res.status(404).json({
         message: 'Фильма не существует'
       });
     }
@@ -134,8 +137,32 @@ adminRouter.delete('/films/:id', (req, res) => {
       return res.status(500).json({ message: 'Ошибка сервера' });
     }
 
-    res.json({
-      message: 'Фильм удалён'
+    Session.findByIdAndDelete({ filmId: req.params.id }, (err, data) => {
+      if (!data) {
+        return res.status(400).json({
+          message: 'Сеанса не существует'
+        });
+      }
+
+      if (err) {
+        return res.status(500).json({ message: 'Ошибка сервера' });
+      }
+
+      Ticket.remove({ sessionId: req.params.id }, (err, data) => {
+        if (!data) {
+          return res.status(400).json({
+            message: 'Билета не существует'
+          });
+        }
+
+        if (err) {
+          return res.status(500).json({ message: 'Ошибка сервера' });
+        }
+
+        res.json({
+          message: 'Фильм удалён'
+        });
+      });
     });
   });
 });
@@ -196,7 +223,7 @@ adminRouter.post('/sessions', (req, res) => {
 adminRouter.delete('/sessions/:id', (req, res) => {
   Session.findByIdAndDelete(req.params.id, (err, data) => {
     if (!data) {
-      return res.status(400).json({
+      return res.status(404).json({
         message: 'Сеанса не существует'
       });
     }
@@ -208,7 +235,7 @@ adminRouter.delete('/sessions/:id', (req, res) => {
     Ticket.remove({ sessionId: req.params.id }, (err, data) => {
       if (!data) {
         return res.status(400).json({
-          message: 'Сеанса не существует'
+          message: 'Билета не существует'
         });
       }
 
