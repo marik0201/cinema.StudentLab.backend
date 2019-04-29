@@ -1,15 +1,23 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const sessionSchema = new Schema({
-  time: String,
-  cinema: String,
-  emptySeats: Number,
+  time: {
+    type: String,
+    required: [true, 'Поле time не заполнено']
+  },
+  cinema: {
+    type: String,
+    required: [true, 'Поле cinema не заполнено']
+  },
+  emptySeats: {
+    type: Number,
+    required: [true, 'Поле emptySeats не заполнено']
+  },
   filmId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: 'Film'
-  },
-  tickets: [{ type: Schema.Types.ObjectId, ref: 'Ticket' }]
+  }
 });
 
 module.exports = mongoose.model('Session', sessionSchema);
