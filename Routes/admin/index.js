@@ -137,24 +137,12 @@ adminRouter.delete('/films/:id', (req, res) => {
       return res.status(500).json({ message: 'Ошибка сервера' });
     }
 
-    Session.findByIdAndDelete({ filmId: req.params.id }, (err, data) => {
-      if (!data) {
-        return res.status(400).json({
-          message: 'Сеанса не существует'
-        });
-      }
-
+    Session.deleteMany({ filmId: req.params.id }, (err, data) => {
       if (err) {
         return res.status(500).json({ message: 'Ошибка сервера' });
       }
 
-      Ticket.remove({ sessionId: req.params.id }, (err, data) => {
-        if (!data) {
-          return res.status(400).json({
-            message: 'Билета не существует'
-          });
-        }
-
+      Ticket.deleteMany({ sessionId: req.params.id }, (err, data) => {
         if (err) {
           return res.status(500).json({ message: 'Ошибка сервера' });
         }
@@ -233,12 +221,6 @@ adminRouter.delete('/sessions/:id', (req, res) => {
     }
 
     Ticket.remove({ sessionId: req.params.id }, (err, data) => {
-      if (!data) {
-        return res.status(400).json({
-          message: 'Билета не существует'
-        });
-      }
-
       if (err) {
         return res.status(500).json({ message: 'Ошибка сервера' });
       }
