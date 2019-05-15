@@ -7,15 +7,15 @@ const Ticket = require('../../models/Ticket');
 const Session = require('../../models/Session');
 
 adminRouter.use((req, res, next) => {
-  req.user.exec(function (err, data) {
+  req.user.exec(function(err, data) {
     if (err) {
       return res.status(500).json({ message: 'Ошибка сервера' });
     }
     data.isAdmin
       ? next()
       : res.status(403).json({
-        message: 'Нет доступа'
-      });
+          message: 'Нет доступа'
+        });
   });
 });
 
@@ -48,7 +48,24 @@ adminRouter.delete('/users/:id', (req, res) => {
       res.json({
         message: 'Пользователь удалён'
       });
-    })
+    });
+  });
+});
+
+adminRouter.post('/users/makeadmin/:id', (req, res) => {
+  User.findByIdAndUpdate(req.params.id, { isAdmin: true }, (err, data) => {
+    if (!data) {
+      return res.status(404).json({
+        message: 'Пользователя не существует'
+      });
+    }
+
+    if (err) {
+      return res.status(500).json({ message: 'Ошибка сервера' });
+    }
+    res.json({
+      message: 'Изменена роль на Администратор'
+    });
   });
 });
 
@@ -69,10 +86,30 @@ adminRouter.post('/users/changerole/:id', (req, res) => {
       if (err) {
         return res.status(500).json({ message: 'Ошибка сервера' });
       }
+      data.isAdmin
+        ? res.json({
+            message: 'Статус сменён на Администратора'
+          })
+        : res.json({
+            message: 'Статус сменён на пользователя'
+          });
+    });
+  });
+});
 
-      res.json({
-        message: 'Статус сменён'
+adminRouter.post('/users/makeuser/:id', (req, res) => {
+  User.findByIdAndUpdate(req.params.id, { isAdmin: false }, (err, data) => {
+    if (!data) {
+      return res.status(404).json({
+        message: 'Пользователя не существует'
       });
+    }
+
+    if (err) {
+      return res.status(500).json({ message: 'Ошибка сервера' });
+    }
+    res.json({
+      message: 'Изменена роль на Пользователь'
     });
   });
 });
