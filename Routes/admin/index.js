@@ -194,7 +194,7 @@ adminRouter.delete('/films/:id', (req, res) => {
 
 adminRouter.get('/sessions', (req, res) => {
   Session.find({})
-    .populate({ path: 'filmId', select: 'name' })
+    .populate([{ path: 'filmId', select: 'name'}, { path: 'cinemaId', select: 'name' }])
     .exec((err, data) => {
       if (err) {
         return res.status(500).json({ message: 'Ошибка сервера' });
