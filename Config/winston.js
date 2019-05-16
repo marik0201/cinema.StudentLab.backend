@@ -16,7 +16,11 @@ const logger = createLogger({
       level: 'error'
     }),
     new transports.File({ filename: './Config/logs/combined.log' })
-  ]
+  ],
+  exceptionHandlers: [
+    new transports.File({ filename: './Config/logs/exceptions.log' })
+  ],
+  exitOnError: false
 });
 
 if (process.env.NODE_ENV !== 'production') {

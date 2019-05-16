@@ -7,7 +7,7 @@ const app = express();
 const PORT = 3000;
 const routes = require('./Routes');
 const log = require('./Config/winston');
-const checkRequset = require('./Service/RequestMiddleware');
+const checkRequest = require('./Service/RequestMiddleware');
 
 mongoose.connect('mongodb://localhost/Cinema', err => {
   if (err) {
@@ -19,7 +19,7 @@ mongoose.connect('mongodb://localhost/Cinema', err => {
   });
 });
 
-app.use(checkRequset);
+app.use(checkRequest);
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
