@@ -1,7 +1,7 @@
 const { createLogger, format, transports } = require('winston');
 
 const logger = createLogger({
-  level: 'info',
+  level: 'debug',
   format: format.combine(
     format.timestamp({
       format: 'YYYY-MM-DD HH:mm:ss'
@@ -15,7 +15,8 @@ const logger = createLogger({
       filename: './Config/logs/error.log',
       level: 'error'
     }),
-    new transports.File({ filename: './Config/logs/combined.log' })
+    new transports.File({ filename: './Config/logs/combined.log', level: 'info' }),
+    new transports.File({ filename: './Config/logs/debug.log', level: 'debug' })
   ],
   exceptionHandlers: [
     new transports.File({ filename: './Config/logs/exceptions.log' })

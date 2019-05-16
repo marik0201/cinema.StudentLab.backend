@@ -17,7 +17,7 @@ mongoose.connect('mongodb://localhost/Cinema', err => {
   log.info({
     message: `Успешное подключение к MongoDB`
   });
-});
+}); 
 
 app.use(checkRequest);
 app.use(cors());
