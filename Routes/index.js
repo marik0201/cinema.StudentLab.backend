@@ -6,8 +6,10 @@ const tickets = require('./tickets');
 const user = require('./user');
 const admin = require('./admin');
 const passport = require('../Service/UserAuthenticate');
+const cinema = require('./cinemas')
 const router = express.Router();
 
+router.use('/api/cinemas', cinema)
 router.use('/api/auth', auth);
 router.use('/api/tickets', passport.authenticate(), tickets);
 router.use('/api/films', films);
